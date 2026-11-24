@@ -1,0 +1,7 @@
+{
+  "name": "humanoid-viewer-test",
+  "private": true,
+  "type": "module",
+  "description": "Headless Three.js check of robot_vNN.glb (see run_viewer_test.mjs). Playwright is taken from the global install.",
+  "dependencies": { "three": "0.170.0" }
+}

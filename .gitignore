@@ -1,0 +1,21 @@
+# Blender scenes and exports are kept outside git (see scripts/build/README.md)
+*.blend
+*.blend1
+*.glb
+/blender/
+
+# Raw renders; only finished files under proof/ are committed
+/out/
+/renders/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Editors and local tools
+*.swp
+.vscode/
+.env
+node_modules/

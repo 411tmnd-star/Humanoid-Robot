@@ -1,0 +1,208 @@
+{
+ "script_version": "1.0",
+ "blender": "5.2.3 LTS",
+ "blend": "robot_armature_v20.blend",
+ "dry_run": false,
+ "jobs": [
+  "hero",
+  "turntable",
+  "wave"
+ ],
+ "gates": {
+  "joint_limits_match_spec": {
+   "pass": true,
+   "detail": []
+  },
+  "wave_inside_limits": {
+   "pass": true,
+   "detail": [],
+   "range_deg": {
+    "CTRL_Shoulder_FlexExt": [
+     0.0,
+     40.0
+    ],
+    "CTRL_Shoulder_AbdAdd": [
+     0.0,
+     0.0
+    ],
+    "CTRL_Shoulder_Rot": [
+     -30.0,
+     -0.0
+    ],
+    "CTRL_Elbow": [
+     0.0,
+     128.97
+    ],
+    "CTRL_Forearm_Twist": [
+     -50.0,
+     -0.0
+    ],
+    "CTRL_Wrist_Flex": [
+     0.0,
+     0.0
+    ],
+    "CTRL_Wrist_Dev": [
+     -8.98,
+     8.98
+    ]
+   }
+  },
+  "hero_framing_geometry": {
+   "x0": 0.29319295824007957,
+   "x1": 0.7068067727292286,
+   "y0": 0.10758222794704919,
+   "y1": 0.8924177335698591,
+   "fill_height": 0.7848355056228099,
+   "fill_width": 0.4136138144891491,
+   "azimuth": 32,
+   "elevation": 6,
+   "lens_mm": 85.0,
+   "ortho_scale": null,
+   "location": [
+    5.8135,
+    -9.0097,
+    2.2927
+   ],
+   "pass": true
+  },
+  "turntable_framing_geometry": {
+   "pass": true,
+   "panels": {
+    "0": {
+     "x0": 0.3261765831315451,
+     "x1": 0.6738234168684549,
+     "y0": 0.10753924974777163,
+     "y1": 0.8924608194529678,
+     "fill_height": 0.7849215697051962,
+     "fill_width": 0.34764683373690985,
+     "pass": true
+    },
+    "45": {
+     "x0": 0.36551816091708034,
+     "x1": 0.6438218480870397,
+     "y0": 0.10520531552600748,
+     "y1": 0.8928726458104606,
+     "fill_height": 0.787667330284453,
+     "fill_width": 0.27830368716995935,
+     "pass": true
+    },
+    "90": {
+     "x0": 0.41269477055032056,
+     "x1": 0.5894414598824937,
+     "y0": 0.10583680214199015,
+     "y1": 0.8938762341286117,
+     "fill_height": 0.7880394319866215,
+     "fill_width": 0.1767466893321732,
+     "pass": true
+    },
+    "180": {
+     "x0": 0.32617655662333433,
+     "x1": 0.6738234168684549,
+     "y0": 0.11017328559823014,
+     "y1": 0.8953578499739527,
+     "fill_height": 0.7851845643757226,
+     "fill_width": 0.3476468602451206,
+     "pass": true
+    },
+    "270": {
+     "x0": 0.41055846059287404,
+     "x1": 0.5873051499250472,
+     "y0": 0.10583679106311661,
+     "y1": 0.8938757012546588,
+     "fill_height": 0.7880389101915422,
+     "fill_width": 0.1767466893321732,
+     "pass": true
+    },
+    "315": {
+     "x0": 0.35617804588011737,
+     "x1": 0.6351817088628131,
+     "y0": 0.1052052510651093,
+     "y1": 0.892873719788229,
+     "fill_height": 0.7876684687231197,
+     "fill_width": 0.27900366298269574,
+     "pass": true
+    }
+   },
+   "ortho_scale": 2.998046875
+  },
+  "wave_framing_geometry": {
+   "x0": 0.2565251973746295,
+   "x1": 0.7434747167623669,
+   "y0": 0.10733736293761686,
+   "y1": 0.89266256740795,
+   "fill_height": 0.7853252044703332,
+   "fill_width": 0.4869495193877374,
+   "azimuth": 14,
+   "elevation": 4,
+   "lens_mm": 85.0,
+   "ortho_scale": null,
+   "location": [
+    2.8005,
+    -10.3554,
+    1.9191
+   ],
+   "pass": true
+  },
+  "wave_loop_closes": {
+   "pass": true,
+   "gap_m": 0.0
+  },
+  "wave_hand_travel": {
+   "pass": true,
+   "metres": 0.8806
+  },
+  "hero_framing_mask": {
+   "pass": true,
+   "fill_height": 0.784
+  }
+ },
+ "timing_s": {
+  "setup": 20.29,
+  "hero": 22.78,
+  "turntable": {
+   "0": 5.65,
+   "45": 5.52,
+   "90": 5.27,
+   "180": 5.52,
+   "270": 5.25,
+   "315": 5.46
+  },
+  "wave": 109.11
+ },
+ "bones": {
+  "DEF_": 56,
+  "MECH_": 68,
+  "CTRL_": 60
+ },
+ "robot_meshes": 122,
+ "frozen_seam_meshes": [
+  [
+   "411_Forearm_L",
+   290
+  ],
+  [
+   "411_Forearm_R",
+   290
+  ],
+  [
+   "411_Head",
+   26841
+  ],
+  [
+   "411_Shin_L",
+   290
+  ],
+  [
+   "411_Shin_R",
+   290
+  ],
+  [
+   "411_Torso",
+   6270
+  ]
+ ],
+ "device": "OPTIX: NVIDIA L4",
+ "pass_pre_render": true,
+ "pass": true,
+ "gpu": "NVIDIA L4"
+}

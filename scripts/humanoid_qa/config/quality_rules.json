@@ -1,0 +1,948 @@
+{
+  "config_version": "quality_rules_v01.8",
+  "schema_version": "hqa-schema-1",
+  "classification": {
+    "armature_object": "RobotArmature",
+    "body_prefix": "411_",
+    "environment_prefixes": [
+      "ENV_",
+      "Studio_"
+    ],
+    "presentation_prefixes": [
+      "CINE_"
+    ],
+    "backup_markers": [
+      "_backup",
+      "_bak",
+      "oldhead"
+    ],
+    "rules": [
+      "1. Name starts with an environment prefix -> environment",
+      "2. Name starts with a presentation prefix -> presentation",
+      "3. Body prefix AND (hidden in viewport or render OR name contains a backup marker) -> excluded_backup",
+      "4. Body prefix AND an enabled Armature modifier targeting armature_object -> body",
+      "5. Anything else -> unresolved (reported, never silently included)"
+    ],
+    "status": "PROPOSED_RULE",
+    "basis": "Prefixes observed in the source and in docs/env_warehouse_phase1.md / cinematic_pass_v1.py; skin binding per scripts/rig/skin_rigid_v01.py. Not an approved project rule."
+  },
+  "tolerances": {
+    "float_compare": {
+      "value": 1e-06,
+      "unit": "m",
+      "kind": "numerical",
+      "status": "JUSTIFIED",
+      "basis": "Blender stores vertex coordinates as float32; the unit-in-last-place at |x|~2.5 m is ~2.4e-7 m, so 1e-6 m is ~4 ulp of margin."
+    },
+    "coincident_vertex": {
+      "value": 1e-06,
+      "unit": "m",
+      "kind": "geometric_matching",
+      "status": "JUSTIFIED",
+      "basis": "Same float32 argument: points closer than this are numerically the same location."
+    },
+    "near_duplicate_vertex": {
+      "value": 0.0001,
+      "unit": "m",
+      "kind": "engineering_diagnostic",
+      "status": "PROVISIONAL",
+      "basis": "Blender's Merge by Distance default (0.0001 m). A tool default, not a project requirement."
+    },
+    "degenerate_face_area": {
+      "value": 1e-12,
+      "unit": "m^2",
+      "kind": "numerical",
+      "status": "JUSTIFIED",
+      "basis": "(coincident_vertex)^2: a face below this area cannot be distinguished from a line/point at float32 precision."
+    },
+    "zero_length_edge": {
+      "value": 1e-06,
+      "unit": "m",
+      "kind": "numerical",
+      "status": "JUSTIFIED",
+      "basis": "Equal to coincident_vertex."
+    },
+    "midline_band": {
+      "value": 0.001,
+      "unit": "m",
+      "kind": "geometric_matching",
+      "status": "PROVISIONAL",
+      "basis": "Half-width of the band around the mirror plane treated as 'midline' when classifying physical side. No spec value exists."
+    },
+    "symmetry_match": {
+      "value": 0.001,
+      "unit": "m",
+      "kind": "engineering_diagnostic",
+      "status": "PROVISIONAL",
+      "basis": "1 mm, chosen as a diagnostic threshold only. No specification sets a symmetry tolerance; findings using it stay provisional."
+    },
+    "bone_pair_position": {
+      "value": 0.001,
+      "unit": "m",
+      "kind": "engineering_diagnostic",
+      "status": "PROVISIONAL",
+      "basis": "1 mm. phase_mirror.md requires mirrored bones but states no tolerance."
+    },
+    "bone_pair_direction": {
+      "value": 1.0,
+      "unit": "deg",
+      "kind": "engineering_diagnostic",
+      "status": "PROVISIONAL",
+      "basis": "No spec value; diagnostic only."
+    },
+    "grid_cell": {
+      "value": 0.01,
+      "unit": "m",
+      "kind": "algorithm_parameter",
+      "status": "JUSTIFIED",
+      "basis": "Not used for nearest-neighbour (exact k-d tree, U-GEOM-04). Retained only as documentation; coincident-pair search uses a grid whose cell equals the pair tolerance."
+    },
+    "bone_min_length_for_direction": {
+      "value": 0.0001,
+      "unit": "m",
+      "kind": "numerical",
+      "status": "JUSTIFIED",
+      "basis": "float32 endpoints at ~1 m carry ~1.2e-7 m error; on a 1e-4 m bone that is <=0.14 deg of direction error, well under the 1 deg pair tolerance. Shorter bones get no direction value and are reported as near-zero-length."
+    },
+    "tri_plane_coplanar": {
+      "value": 1e-06,
+      "unit": "m",
+      "kind": "numerical",
+      "status": "JUSTIFIED",
+      "basis": "float32 world coordinates at ~1 m carry ~1e-7 m error; two triangles within 1e-6 m of each other's plane are treated as coplanar."
+    },
+    "tri_contact": {
+      "value": 1e-06,
+      "unit": "m",
+      "kind": "numerical",
+      "status": "JUSTIFIED",
+      "basis": "Equal to coincident_vertex: triangles closer than this without a proper crossing are 'contact' (touching), not separated."
+    },
+    "max_candidate_pairs": {
+      "value": 2000000,
+      "unit": "count",
+      "kind": "algorithm_parameter",
+      "status": "JUSTIFIED",
+      "basis": "Memory/time guard for BVH candidate pairs per mesh or mesh pair; exceeding it yields UNABLE_TO_DETERMINE, never a clean result."
+    },
+    "proximity_search_radius": {
+      "value": 0.02,
+      "unit": "m",
+      "kind": "scope_parameter",
+      "status": "EXPERIMENTAL",
+      "basis": "Reporting scope only: mesh pairs farther apart than this are not measured. No project document defines a proximity requirement; this is not a defect threshold."
+    },
+    "penetration_null_volume": {
+      "value": 1e-12,
+      "unit": "m^3",
+      "kind": "numerical",
+      "status": "PROVISIONAL",
+      "basis": "Overlap volumes at or below this are reported as zero overlap. 1e-12 m^3 is a 1 um slab over 1 mm^2, the tri_contact scale over a face of that size. No specification sets a volume threshold. Checked against zero-overlap fixtures (U-SOL-02, B-VOL-03) and Boolean residuals."
+    },
+    "penetration_bisection_iterations": {
+      "value": 18,
+      "unit": "count",
+      "kind": "algorithm_parameter",
+      "status": "JUSTIFIED",
+      "basis": "Bisection bracket T <= ~0.6 m for body pairs; after 18 halvings the bracket is <= 2.3 um, the resolution of the axial separation bound."
+    },
+    "volume_solver_agreement_rel": {
+      "value": 0.0001,
+      "unit": "relative",
+      "kind": "engineering_diagnostic",
+      "status": "PROVISIONAL",
+      "basis": "Two independent Boolean kernels (EXACT, MANIFOLD) and both operand orders must agree on the intersection volume to 0.01%. A larger spread leaves the volume unvalidated (SOLVER_DISAGREEMENT)."
+    },
+    "volume_identity_rel": {
+      "value": 0.0001,
+      "unit": "relative",
+      "kind": "engineering_diagnostic",
+      "status": "PROVISIONAL",
+      "basis": "V(A n B) + V(A minus B) must equal V(A) to 0.01%, computed with an independent DIFFERENCE operation. Failure leaves the volume unvalidated (IDENTITY_FAILED)."
+    },
+    "penetration_axial_scan_samples": {
+      "value": 32,
+      "unit": "count",
+      "kind": "algorithm_parameter",
+      "status": "JUSTIFIED",
+      "basis": "Uniform samples of the overlap volume along each axial translation ray (spacing T/32, T <= ~0.6 m for body pairs => <= 1.9 cm). The scan only DETECTS non-monotone overlap wider than the spacing and selects the first null sample before bisecting; it cannot prove that no narrower gap exists, so it never upgrades a result to an exact minimum (U-SOL-11, U-SOL-12)."
+    }
+  },
+  "coordinate_convention": {
+    "status": "OWNER_DECISION_REQUIRED",
+    "outcome": "B_STRONG_CANDIDATE_OWNER_CONFIRMATION_REQUIRED",
+    "world_frame": "Blender world, right-handed, metres (scene METRIC, scale_length 1.0 verified per run)",
+    "up_axis": "+Z",
+    "forward_axis_candidate": "-Y",
+    "mirror_plane": {
+      "axis": "X",
+      "value": 0.0,
+      "unit": "m"
+    },
+    "anatomical_right_if_forward_minus_Y": "-X (right = forward x up)",
+    "label_interpretations": {
+      "V_viewer_relative": "Unsided bones and *_R meshes (+X) are 'right' as seen from the front camera at -Y. This is how phase_mirror.md, anim_hello.md and the manifest use 'right'.",
+      "A_anatomical": "Labels name the robot's own sides. Then +X is the robot's LEFT and every current side label is inverted."
+    },
+    "side_dependent_adjudication_allowed": false,
+    "note": "Pair-wise mirror measurements are label-independent and may run; deciding which side is correct, renaming, and anatomical deformation tests may not."
+  },
+  "severity_definitions": {
+    "BLOCKER": "Prevents a correct export/runtime result or invalidates downstream analysis until resolved.",
+    "HIGH": "Likely to produce visibly wrong behaviour or wrong engineering decisions if left; resolve before structural work.",
+    "MEDIUM": "Contradicts a written project convention or spec, or weakens maintainability, without a demonstrated runtime failure.",
+    "LOW": "Diagnostic deviation with plausible design intent; review when convenient.",
+    "INFO": "Recorded fact for context; no action implied."
+  },
+  "methods": {
+    "M-CLASSIFY": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "B-CLS-01"
+      ],
+      "property": "Object class: body / environment / presentation / excluded_backup / unresolved",
+      "definition": "Ordered rules in classification.rules",
+      "units": "n/a",
+      "frame": "n/a",
+      "includes": "all scene objects of type MESH",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "a new naming pattern falls to 'unresolved'",
+      "tolerance": "none",
+      "proves": "membership by rule",
+      "cannot_prove": "design intent of an object"
+    },
+    "M-BBOX-WORLD": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-GEOM-01",
+        "U-GEOM-02",
+        "B-XF-01",
+        "B-XF-02"
+      ],
+      "property": "Axis-aligned bounds and dimensions",
+      "definition": "min/max over matrix_world @ vertex.co (base mesh data)",
+      "units": "m",
+      "frame": "world",
+      "includes": "objects classified body",
+      "transforms": "full object matrix_world incl. parents",
+      "geometry": "base (rest, unmodified)",
+      "failure_modes": "wrong inclusion set; modifiers that add geometry are ignored",
+      "tolerance": "float_compare",
+      "proves": "extent of base geometry",
+      "cannot_prove": "presentation silhouette after modifiers or pose"
+    },
+    "M-BBOX-EVAL": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "B-EVAL-01"
+      ],
+      "property": "Bounds of depsgraph-evaluated geometry",
+      "definition": "min/max over evaluated mesh vertices x matrix_world",
+      "units": "m",
+      "frame": "world",
+      "includes": "body objects",
+      "transforms": "evaluated",
+      "geometry": "evaluated at the file's current frame",
+      "failure_modes": "depends on current frame / active action pose",
+      "tolerance": "float_compare",
+      "proves": "what the depsgraph produces at that frame",
+      "cannot_prove": "rest-pose extent"
+    },
+    "M-COUNTS": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-GEOM-07"
+      ],
+      "property": "Vertex/edge/face/object counts",
+      "definition": "len() of mesh element lists",
+      "units": "count",
+      "frame": "n/a",
+      "includes": "per object",
+      "transforms": "n/a",
+      "geometry": "base",
+      "failure_modes": "none known",
+      "tolerance": "exact",
+      "proves": "counts",
+      "cannot_prove": "quality"
+    },
+    "M-TOPO": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-GEOM-07"
+      ],
+      "property": "Boundary, non-manifold, wire edges; loose vertices; connected components",
+      "definition": "edge face-incidence from polygons (1 = boundary, >2 = non-manifold, 0 = wire); union-find over edges",
+      "units": "count",
+      "frame": "n/a",
+      "includes": "per body object",
+      "transforms": "n/a",
+      "geometry": "base",
+      "failure_modes": "none known for the counted properties",
+      "tolerance": "exact",
+      "proves": "the counted condition exists",
+      "cannot_prove": "that an open boundary is unintended"
+    },
+    "M-DEGEN": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-GEOM-08"
+      ],
+      "property": "Degenerate faces / zero-length edges",
+      "definition": "Newell polygon area <= degenerate_face_area; edge length <= zero_length_edge",
+      "units": "m^2 / m",
+      "frame": "object local",
+      "includes": "per body object",
+      "transforms": "none (local)",
+      "geometry": "base",
+      "failure_modes": "non-planar n-gons use Newell projected area",
+      "tolerance": "degenerate_face_area, zero_length_edge",
+      "proves": "numerically collapsed elements",
+      "cannot_prove": "slivers above threshold"
+    },
+    "M-DUP": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-GEOM-06"
+      ],
+      "property": "Coincident and near-duplicate vertex pairs",
+      "definition": "unordered pairs within tolerance, exact grid search",
+      "units": "count",
+      "frame": "object local",
+      "includes": "per body object",
+      "transforms": "none",
+      "geometry": "base",
+      "failure_modes": "none known",
+      "tolerance": "coincident_vertex, near_duplicate_vertex",
+      "proves": "pairs exist",
+      "cannot_prove": "that they are unintended (seams, split normals)"
+    },
+    "M-SYM-MESH": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-GEOM-04",
+        "U-GEOM-05",
+        "U-CLS-01"
+      ],
+      "property": "Mirror symmetry of point sets",
+      "definition": "nearest-neighbour distance from mirrored points to the comparison set, both directions",
+      "units": "m",
+      "frame": "world",
+      "includes": "body objects / named L-R mesh pairs",
+      "transforms": "world",
+      "geometry": "base",
+      "failure_modes": "unequal vertex density inflates distances; NN can match the wrong surface",
+      "tolerance": "symmetry_match (PROVISIONAL)",
+      "proves": "upper bound on surface mismatch at sampled vertices",
+      "cannot_prove": "vertex correspondence or design intent"
+    },
+    "M-BONE-WORLD": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "B-XF-03"
+      ],
+      "property": "Bone head/tail world positions and lengths",
+      "definition": "armature matrix_world @ bone.head_local / tail_local",
+      "units": "m",
+      "frame": "world (rest)",
+      "includes": "all bones",
+      "transforms": "armature object matrix",
+      "geometry": "rest data",
+      "failure_modes": "none known",
+      "tolerance": "float_compare",
+      "proves": "rest positions",
+      "cannot_prove": "posed positions"
+    },
+    "M-GRAPH": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-RIG-01",
+        "U-RIG-02"
+      ],
+      "property": "Roots, components, cycles, depth, leaves, missing parents",
+      "definition": "parent map analysis",
+      "units": "count",
+      "frame": "n/a",
+      "includes": "all bones",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "none known",
+      "tolerance": "exact",
+      "proves": "structure",
+      "cannot_prove": "that structure matches intent"
+    },
+    "M-SIDE-PARSE": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-RIG-03",
+        "U-RIG-04"
+      ],
+      "property": "Side markers and name-based pairs",
+      "definition": "suffix (_L/_R/.L/.R) then infix (_L_/_R_) parsing; pair by base name",
+      "units": "n/a",
+      "frame": "n/a",
+      "includes": "bones and meshes",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "a name containing a lone 'L'/'R' token that is not a side marker",
+      "tolerance": "exact",
+      "proves": "what the names say",
+      "cannot_prove": "anatomical side"
+    },
+    "M-FACING": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-GEOM-09"
+      ],
+      "property": "Forward axis and anatomical right axis",
+      "definition": "sign of independent front/back cue offsets along Y; right = forward x up",
+      "units": "m / unit vector",
+      "frame": "world",
+      "includes": "named cue objects/bones",
+      "transforms": "world",
+      "geometry": "base",
+      "failure_modes": "cues mis-named or relocated",
+      "tolerance": "midline_band",
+      "proves": "which way the geometry faces",
+      "cannot_prove": "which labelling convention the owner intends"
+    },
+    "M-SYM-BONE": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-RIG-05",
+        "U-RIG-12",
+        "B-XF-03"
+      ],
+      "property": "Mirror-pair bone deltas",
+      "definition": "|mirror(head_a) - head_b|, same for tail, |len_a - len_b|, angle(mirror(dir_a), dir_b)",
+      "units": "m / deg",
+      "frame": "world",
+      "includes": "name-paired bones",
+      "transforms": "world",
+      "geometry": "rest",
+      "failure_modes": "roll is not compared (reflection flips handedness)",
+      "tolerance": "bone_pair_position, bone_pair_direction (PROVISIONAL)",
+      "proves": "geometric mirror deviation",
+      "cannot_prove": "that mirror symmetry is required"
+    },
+    "M-COLOC": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-RIG-10"
+      ],
+      "property": "Distance from a MECH/CTRL bone head to the nearest DEF bone head",
+      "definition": "min over DEF bones of |head - def_head|",
+      "units": "m",
+      "frame": "world",
+      "includes": "MECH/CTRL bones",
+      "transforms": "world",
+      "geometry": "rest",
+      "failure_modes": "nearest DEF may not be the logically driven one",
+      "tolerance": "none (reported)",
+      "proves": "where mechanism bones sit relative to the deform skeleton",
+      "cannot_prove": "that placement matters to deformation"
+    },
+    "M-SKIN": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-RIG-06",
+        "B-WGT-01",
+        "B-WGT-02"
+      ],
+      "property": "Skinning conditions 1-4 (deform flag, group exists, non-zero weights, bound via Armature modifier)",
+      "definition": "set logic over bones, vertex groups, weights and modifiers",
+      "units": "count",
+      "frame": "n/a",
+      "includes": "body objects",
+      "transforms": "n/a",
+      "geometry": "base",
+      "failure_modes": "none known",
+      "tolerance": "weight > 0",
+      "proves": "preconditions for deformation",
+      "cannot_prove": "actual deformation (condition 5)"
+    },
+    "M-CONSTRAINT-REF": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-RIG-07",
+        "B-CON-01"
+      ],
+      "property": "Constraint target/subtarget existence",
+      "definition": "lookup against scene objects and armature bones",
+      "units": "count",
+      "frame": "n/a",
+      "includes": "object and pose-bone constraints",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "constraint types with unusual target fields",
+      "tolerance": "exact",
+      "proves": "broken references",
+      "cannot_prove": "mathematical correctness of a valid constraint"
+    },
+    "M-CONSTRAINT-PAIR": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-RIG-09"
+      ],
+      "property": "Constraint stack equality across mirror pairs",
+      "definition": "compare (type, side-stripped subtarget, influence, spaces, mute) stacks",
+      "units": "n/a",
+      "frame": "n/a",
+      "includes": "name-paired bones",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "limits/axes not compared",
+      "tolerance": "influence to 1e-6",
+      "proves": "configuration differences",
+      "cannot_prove": "which side is correct"
+    },
+    "M-MOD-REF": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "B-WGT-02"
+      ],
+      "property": "Armature modifier target and flags",
+      "definition": "read modifier.object, use_vertex_groups, show_* ",
+      "units": "n/a",
+      "frame": "n/a",
+      "includes": "body objects",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "other modifier types only inventoried",
+      "tolerance": "exact",
+      "proves": "binding configuration",
+      "cannot_prove": "deformation quality"
+    },
+    "M-UNITS": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "B-XF-02"
+      ],
+      "property": "Scene units and object scale",
+      "definition": "unit_settings + object scale/rotation read directly",
+      "units": "n/a",
+      "frame": "n/a",
+      "includes": "scene + objects",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "none known",
+      "tolerance": "float_compare",
+      "proves": "unit context",
+      "cannot_prove": "intended scale"
+    },
+    "M-SPEC-COMPARE": {
+      "declared_status": "EXPERIMENTAL",
+      "validated_by": [],
+      "property": "Measured dimension vs SPEC_JSON value",
+      "definition": "difference of matching keys",
+      "units": "m",
+      "frame": "world",
+      "includes": "keys with an agreed landmark definition",
+      "transforms": "world",
+      "geometry": "base",
+      "failure_modes": "landmark definitions for most SPEC_JSON keys are not documented",
+      "tolerance": "none approved",
+      "proves": "numerical difference",
+      "cannot_prove": "which value is intended"
+    },
+    "M-NORMALS": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-GEOM-11",
+        "U-GEOM-12"
+      ],
+      "property": "Winding consistency and shell orientation",
+      "definition": "edges shared by exactly two faces must be traversed in opposite directions; signed volume (divergence theorem) is positive for outward-wound closed shells",
+      "units": "count / m^3",
+      "frame": "object local (sign interpreted with the object matrix determinant)",
+      "includes": "body objects",
+      "transforms": "local coordinates; negative-determinant objects flip the world-space meaning",
+      "geometry": "base",
+      "failure_modes": "open or non-manifold meshes get no volume; self-intersecting shells give misleading volume",
+      "tolerance": "exact count; volume sign only",
+      "proves": "inconsistent neighbour winding exists; closed shell is inside-out",
+      "cannot_prove": "that custom split normals or shading are correct"
+    },
+    "M-SELFINT": {
+      "units": "m",
+      "frame": "world",
+      "transforms": "full object matrix_world",
+      "geometry": "base (unmodified) mesh data, Blender loop-triangle tessellation",
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-INT-10",
+        "U-INT-11",
+        "U-INT-12",
+        "U-INT-13",
+        "U-INT-17",
+        "B-INT-03",
+        "U-INT-23"
+      ],
+      "property": "Triangles of one mesh that cross, overlap coplanarly or fold over (non-adjacent or adjacent)",
+      "definition": "TriBVH box candidates -> welded-vertex adjacency filter (edge-sharing: fold-over only; vertex-sharing: opposite-edge crossing or coplanar overlap) -> exact classifier",
+      "includes": "body meshes; degenerate triangles are excluded and listed",
+      "failure_modes": "adjacency uses welded positions (weld = coincident_vertex), so genuinely separate surfaces welded by coincidence are not reported; budget exceeded -> UNABLE_TO_DETERMINE",
+      "tolerance": "tri_plane_coplanar, tri_contact, degenerate_face_area, coincident_vertex, max_candidate_pairs",
+      "proves": "listed triangle pairs intersect by the stated definitions",
+      "cannot_prove": "absence of self-intersection (no result is a clean bill of health); intent; behaviour of evaluated (modifier) geometry"
+    },
+    "M-DEFORM-TEST": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "B-DEF-01",
+        "B-DEF-02"
+      ],
+      "property": "Evaluated mesh displacement when a control bone is posed (isolated copy)",
+      "definition": "rest snapshot vs posed snapshot of depsgraph-evaluated vertices; pose restored and verified",
+      "units": "m",
+      "frame": "world",
+      "includes": "body meshes; CTRL flex-type bones, one axis, fixed angle",
+      "transforms": "evaluated",
+      "geometry": "evaluated",
+      "failure_modes": "constraint limits clamp the response; animation must be detached (copy only)",
+      "tolerance": "move_threshold 1e-4 m, restore 1e-6 m (both numerical)",
+      "proves": "which meshes follow a control bone and by how much at that pose",
+      "cannot_prove": "motion quality, ranges of motion, or any anatomical claim"
+    },
+    "M-THUMB-ADJ": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-RIG-11",
+        "B-XF-03"
+      ],
+      "property": "Which finger base each thumb sits beside",
+      "definition": "compare |thumb CMC head - Index MCP head| with |... - Little MCP head|",
+      "units": "m",
+      "frame": "world",
+      "includes": "DEF thumb/finger bones of each hand",
+      "transforms": "world",
+      "geometry": "rest",
+      "failure_modes": "renamed finger bones",
+      "tolerance": "strict comparison",
+      "proves": "thumb adjacency within one hand (label-independent)",
+      "cannot_prove": "which hand the owner treats as correct"
+    },
+    "M-SHORT-BONE": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-RIG-12"
+      ],
+      "property": "Near-zero-length bones",
+      "definition": "bone.length < bone_min_length_for_direction",
+      "units": "m",
+      "frame": "rest",
+      "includes": "all bones",
+      "transforms": "n/a",
+      "geometry": "rest",
+      "failure_modes": "none known",
+      "tolerance": "bone_min_length_for_direction",
+      "proves": "the bone has no numerically meaningful direction/roll",
+      "cannot_prove": "whether that breaks deformation"
+    },
+    "M-EXPORT-PROBE": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-GLB-01",
+        "B-EXP-01",
+        "B-EXP-02"
+      ],
+      "property": "Skin joint set of an exported GLB (all bones vs deform-only)",
+      "definition": "export a selected body+armature from an isolated copy, read nodes/skins from the GLB JSON chunk",
+      "units": "count",
+      "frame": "n/a",
+      "includes": "body meshes + armature",
+      "transforms": "n/a",
+      "geometry": "exported",
+      "failure_modes": "exporter option semantics can change between Blender versions",
+      "tolerance": "exact",
+      "proves": "which bones the exporter writes as joints with the given options",
+      "cannot_prove": "runtime (Three.js) behaviour"
+    },
+    "M-GATE": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-GATE-01",
+        "U-GATE-02"
+      ],
+      "property": "Side-dependent operations refuse to decide while the convention is unresolved",
+      "definition": "core/gate.py reads coordinate_convention.status and the allow flag",
+      "units": "n/a",
+      "frame": "n/a",
+      "includes": "all side-dependent outputs",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "a caller that bypasses gate.py",
+      "tolerance": "exact",
+      "proves": "gated outputs are UNRESOLVED",
+      "cannot_prove": "that ungated code is side-independent"
+    },
+    "M-REGRESS": {
+      "declared_status": "QUALIFIED",
+      "validated_by": [
+        "U-CMP-01"
+      ],
+      "property": "Run-to-run regression detection",
+      "definition": "compare source hash, metrics, method statuses, tests and findings of two QA runs",
+      "units": "n/a",
+      "frame": "n/a",
+      "includes": "two run directories",
+      "transforms": "n/a",
+      "geometry": "n/a",
+      "failure_modes": "findings are keyed by title, so a retitled finding appears as removed+added",
+      "tolerance": "float_compare for metrics",
+      "proves": "differences between runs; nondeterminism when the source hash is identical",
+      "cannot_prove": "that either run is correct"
+    },
+    "M-NORMALS-BLENDER": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "B-NRM-01"
+      ],
+      "property": "Faces Blender's recalc_face_normals would flip (independent orientation algorithm)",
+      "definition": "bmesh copy, normal_update, recalc_face_normals, count faces whose normal reversed",
+      "units": "count",
+      "frame": "object local",
+      "includes": "body objects",
+      "transforms": "none",
+      "geometry": "base",
+      "failure_modes": "Blender's outside heuristic can misjudge complex shells",
+      "tolerance": "exact",
+      "proves": "what Blender's algorithm would change",
+      "cannot_prove": "that the current orientation is wrong by design"
+    },
+    "M-TRI-PAIR": {
+      "units": "m",
+      "frame": "world",
+      "transforms": "full object matrix_world",
+      "geometry": "base (unmodified) mesh data, Blender loop-triangle tessellation",
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-INT-01",
+        "U-INT-02",
+        "U-INT-03",
+        "U-INT-04",
+        "U-INT-05",
+        "U-INT-06",
+        "U-INT-07",
+        "U-INT-18",
+        "U-INT-20",
+        "U-INT-21",
+        "U-INT-22",
+        "U-INT-CFG",
+        "U-INT-23"
+      ],
+      "property": "Triangle-pair relation: disjoint / contact / intersect (proper crossing) / coplanar_overlap / degenerate",
+      "definition": "degenerate if area<=degenerate_face_area or any edge<=tri_contact; coplanar = one triangle inside the other's tri_plane_coplanar slab -> clipped overlap area; else strict-interior edge crossing with depth > tri_contact = intersect (shallower = contact); else min distance vs tri_contact. Validated against a separating-axis oracle, an exact rational oracle and dense sampling.",
+      "includes": "any two triangles",
+      "failure_modes": "crossings exactly on a triangle boundary are classed 'contact' (touch), not 'intersect'; near-coplanar pairs depend on tri_plane_coplanar",
+      "tolerance": "tri_plane_coplanar, tri_contact, degenerate_face_area (all numerical, JUSTIFIED)",
+      "proves": "the geometric relation of two triangles to numerical tolerance",
+      "cannot_prove": "that a relation is a design defect"
+    },
+    "M-INTERMESH": {
+      "units": "m",
+      "frame": "world",
+      "transforms": "full object matrix_world",
+      "geometry": "base (unmodified) mesh data, Blender loop-triangle tessellation",
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-INT-02",
+        "U-INT-14",
+        "U-INT-22",
+        "B-INT-02"
+      ],
+      "property": "Triangle intersections between two body meshes",
+      "definition": "TriBVH cross candidates -> exact classifier; pair status DEFINITE / POSSIBLE (contact only) / NONE_DETECTED / UNABLE_TO_DETERMINE",
+      "includes": "411_* meshes classified body; environment/presentation excluded",
+      "failure_modes": "volumetric penetration is only interpretable for closed manifold meshes (flagged per pair)",
+      "tolerance": "as M-TRI-PAIR",
+      "proves": "triangle-level intersections between the two meshes",
+      "cannot_prove": "whether overlap is intentional construction, or penetration depth"
+    },
+    "M-DISTANCE": {
+      "units": "m",
+      "frame": "world",
+      "transforms": "full object matrix_world",
+      "geometry": "base (unmodified) mesh data, Blender loop-triangle tessellation",
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-INT-01",
+        "U-INT-08",
+        "U-INT-09",
+        "U-INT-15",
+        "U-INT-16",
+        "U-INT-19",
+        "B-INT-01"
+      ],
+      "property": "Exact minimum separation between two non-intersecting meshes, with the triangles and world points involved",
+      "definition": "branch-and-bound over TriBVH; triangle distance = min(vertex-face, edge-edge)",
+      "includes": "pairs within proximity_search_radius",
+      "failure_modes": "pairs beyond the search radius are not measured; invalid for intersecting pairs (reported as intersecting)",
+      "tolerance": "float32 world coordinates (~1e-7 m)",
+      "proves": "the minimum distance to float precision",
+      "cannot_prove": "that a small distance is a defect"
+    },
+    "M-BVH": {
+      "units": "m",
+      "frame": "world",
+      "transforms": "full object matrix_world",
+      "geometry": "base (unmodified) mesh data, Blender loop-triangle tessellation",
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-INT-16"
+      ],
+      "property": "Candidate-pair completeness of core TriBVH",
+      "definition": "core TriBVH candidate sets equal brute-force box overlap (self and cross); branch-and-bound distance equals brute force",
+      "includes": "all body meshes",
+      "failure_modes": "Blender BVHTree candidates are bounding-volume pairs, not confirmed intersections",
+      "tolerance": "exact set equality",
+      "proves": "no candidate is lost by the acceleration structure on the tested configurations",
+      "cannot_prove": "exactness for geometry not cross-checked"
+    },
+    "M-PROX-CLASS": {
+      "units": "m",
+      "frame": "world",
+      "transforms": "full object matrix_world",
+      "geometry": "base (unmodified) mesh data, Blender loop-triangle tessellation",
+      "declared_status": "EXPERIMENTAL",
+      "validated_by": [],
+      "property": "Threshold-based classification of close approaches",
+      "definition": "no approved proximity requirement exists; any bucketing is experimental",
+      "includes": "n/a",
+      "failure_modes": "an invented threshold would be mistaken for a requirement",
+      "tolerance": "proximity_search_radius is a reporting scope (EXPERIMENTAL), not a defect threshold",
+      "proves": "nothing",
+      "cannot_prove": "defects"
+    },
+    "M-XCHECK": {
+      "units": "count",
+      "frame": "world",
+      "transforms": "full object matrix_world",
+      "geometry": "base mesh data",
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "B-INT-02",
+        "B-INT-03",
+        "B-INT-04",
+        "U-INT-18",
+        "U-INT-22"
+      ],
+      "property": "Agreement of the core intersection classifier with independent implementations",
+      "definition": "core proper-crossing pair set vs Blender BVHTree.overlap (own float32 triangle test, semantics pinned by B-INT-04); every disagreement adjudicated by exact rational arithmetic",
+      "includes": "body mesh pairs with overlapping boxes",
+      "failure_modes": "Blender's float32 test can miss crossings exact arithmetic confirms; its treatment of coplanar/touching triangles is not documented",
+      "tolerance": "exact set equality + exact oracle",
+      "proves": "where core and Blender agree/disagree and which is right per exact arithmetic",
+      "cannot_prove": "correctness of geometry the oracle was not run on (disagreements only)"
+    },
+    "M-SOL-VOLUME": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "B-REF-01",
+        "B-REF-02",
+        "B-VOL-01",
+        "B-VOL-02",
+        "B-VOL-03",
+        "B-VOL-04",
+        "B-VOL-05",
+        "B-VOL-06",
+        "B-VOL-07",
+        "B-VOL-09",
+        "U-REF-08",
+        "U-REF-09",
+        "U-SOL-01",
+        "U-SOL-02",
+        "U-SOL-03",
+        "U-SOL-04",
+        "U-SOL-05",
+        "U-SOL-06",
+        "U-SOL-07",
+        "U-SOL-08",
+        "U-SOL-10"
+      ],
+      "property": "Volume of the solid intersection A n B of two closed body shells",
+      "definition": "Boolean INTERSECT volume (divergence theorem on the evaluated result) on in-memory copies whose components are oriented outward by their signed volume; exact for convex operands (pure backend). Validated when both kernels agree, both operand orders agree and V(A n B) + V(A minus B) = V(A).",
+      "units": "m^3",
+      "frame": "world",
+      "includes": "body mesh pairs with definite triangle intersections, both operands closed",
+      "transforms": "full object matrix_world, baked into world coordinates",
+      "geometry": "base (unmodified) mesh data; modifiers not applied",
+      "failure_modes": "open, non-manifold, degenerate (not refinable) or winding-inconsistent operands are refused; kernel disagreement or identity failure leaves the value unvalidated; multi-component operands assume non-overlapping components; a refined copy is accepted only with REFINEMENT concordance (M-SOL-REFINE)",
+      "tolerance": "penetration_null_volume, volume_solver_agreement_rel, volume_identity_rel",
+      "proves": "the overlap volume of the stated solids, to the kernel and tolerance stated",
+      "cannot_prove": "that the overlap is unintended, or that the solids represent the robot's real surfaces"
+    },
+    "M-SOL-DEPTH-AXIAL": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-SOL-01",
+        "U-SOL-03",
+        "U-SOL-09",
+        "U-SOL-11",
+        "U-SOL-12",
+        "U-SOL-13",
+        "U-SOL-14",
+        "U-SOL-15",
+        "B-VOL-08",
+        "B-VOL-10",
+        "B-VOL-11",
+        "B-VOL-12"
+      ],
+      "property": "Upper bound on the minimum translation distance (penetration depth) of two closed shells",
+      "definition": "For each world axis direction d, t(d) is a verified separating translation of A along d: A moved by t(d)*d has overlap volume <= penetration_null_volume (primary kernel) and no proper triangle-surface crossing deeper than tri_contact (certificate); a uniform scan (penetration_axial_scan_samples) selects the first null sample and flags sampled reappearance of the overlap. axial_separation_bound = min over d of t(d). Every feasible separating translation has length >= MTD, so the bound is an UPPER BOUND on the minimum translation distance, to within about tri_contact. It equals MTD for axis-aligned boxes only.",
+      "units": "m",
+      "frame": "world",
+      "includes": "same pairs as M-SOL-VOLUME",
+      "transforms": "translation of A only",
+      "geometry": "base mesh data",
+      "failure_modes": "NOT the minimum translation distance for general shapes (only six directions; e.g. sqrt(2) times MTD for a 45 degree face, U-SOL-13); the value along an axis need not be the first separation when overlap vanishes and reappears (non-convex or disconnected shapes) and the scan sees only gaps wider than T/penetration_axial_scan_samples (U-SOL-11, U-SOL-12); a null-volume test alone under-reports sharp-tip penetration by up to ~1e-4 m (U-SOL-14), which the surface-crossing certificate removes to ~tri_contact; directions that fail to verify or certify are listed and excluded",
+      "tolerance": "penetration_bisection_iterations, penetration_axial_scan_samples, penetration_null_volume, tri_contact",
+      "proves": "a verified translation of this length along one axis removes the overlap volume and all proper surface crossings deeper than tri_contact, i.e. an upper bound on the minimum translation distance",
+      "cannot_prove": "the exact penetration depth, the minimum translation distance, or the direction of least resistance for non-box shapes"
+    },
+    "M-SOL-REFINE": {
+      "declared_status": "QUALIFIED_WITH_LIMITATIONS",
+      "validated_by": [
+        "U-REF-00",
+        "U-REF-01",
+        "U-REF-02",
+        "U-REF-03",
+        "U-REF-04",
+        "U-REF-05",
+        "U-REF-06",
+        "U-REF-07",
+        "U-REF-08",
+        "U-REF-09",
+        "B-REF-01",
+        "B-REF-02"
+      ],
+      "property": "Measurement-copy refinement of a closed shell refused only for DEGENERATE_FACE, with a preservation proof",
+      "definition": "On an in-memory copy: (1) merge bit-identical vertices (exact), then (2) collapse clusters of vertices joined by edges <= zero_length_edge (1e-6 m) to their centroid and drop the faces that collapse. The copy is accepted only if the gate is clean, topology is closed manifold with the same components and orientation, every removed face is a sliver (altitude <= 1e-6 m), vertex displacement and sampled surface distance <= 1e-6 m, and the signed-volume change is within the swept-volume bound (surface area x distance). A pair measured on a copy is VOLUME_VALIDATED only if the unrefined shells give the same overlap volume through both kernels to volume_solver_agreement_rel.",
+      "units": "m, m^3",
+      "frame": "world",
+      "includes": "operands whose ONLY gate reason is DEGENERATE_FACE",
+      "transforms": "none (vertex merge only)",
+      "geometry": "base mesh data copied in memory; the .blend is never written",
+      "failure_modes": "needle faces with no short edge cannot be repaired (NOT_APPLICABLE); thin real solids below the edge tolerance are rejected by the acceptance tests (U-REF-07); sampled surface distance is a sample, not a proof, for removed faces",
+      "tolerance": "zero_length_edge, degenerate_face_area, volume_solver_agreement_rel",
+      "proves": "that the copy differs from the original by at most the stated displacement and removed slivers, and that the measured overlap volume is unchanged within the kernel agreement tolerance",
+      "cannot_prove": "that the original mesh is free of defects (it is not repaired); equivalence for any measurement other than the overlap volume and separation bound"
+    }
+  },
+  "finger_mesh_map": {
+    "R": {
+      "4": "Index",
+      "3": "Middle",
+      "2": "Ring",
+      "1": "Little"
+    },
+    "L": {
+      "1": "Index",
+      "2": "Middle",
+      "3": "Ring",
+      "4": "Little"
+    },
+    "status": "SOURCE_FACT",
+    "basis": "scripts/rig/skin_rigid_v01.py:30-33 FINGER_MAP (side-dependent finger numbering)"
+  }
+}

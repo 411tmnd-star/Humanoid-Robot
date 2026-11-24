@@ -1,0 +1,173 @@
+{
+ "project": "Humanoid-Robot",
+ "schema": 1,
+ "written": "2026-11-24",
+ "source_scene": "robot_armature_v20.blend (SHA-256 d02f01723636f2365ffeaa05fdcd4f731bc4effd11676f8b8186e87e43798a4a)",
+ "files": [
+  {
+   "file": "01_hero_scene.png",
+   "shows": "Three-quarter hero view at frame 31 of the wave, studio cyclorama",
+   "input": "robot_armature_v20.blend (SHA-256 d02f01723636f2365ffeaa05fdcd4f731bc4effd11676f8b8186e87e43798a4a)",
+   "generator": [
+    "scripts/showcase/render_showcase.py --jobs hero",
+    "scripts/showcase/compose_showcase.py"
+   ],
+   "metric": "Figure fills 75 to 82 % of frame height (geometry and alpha mask)",
+   "status": "PRESENT",
+   "bytes": 1860830,
+   "sha256": "7bd50adbaef64b5e71a91e9d7a5a97cd2494725d53591115173fc365b99c41fa"
+  },
+  {
+   "file": "02_turntable_sheet.png",
+   "shows": "Six orthographic views: 0, 45, 90, 180, 270, 315 degrees",
+   "input": "robot_armature_v20.blend (SHA-256 d02f01723636f2365ffeaa05fdcd4f731bc4effd11676f8b8186e87e43798a4a)",
+   "generator": [
+    "scripts/showcase/render_showcase.py --jobs turntable",
+    "scripts/showcase/compose_showcase.py"
+   ],
+   "metric": "Same fill gate on all six panels, fixed light",
+   "status": "PRESENT",
+   "bytes": 1780913,
+   "sha256": "c55c89dd53df3affba037203e75bf8090e617b74adf7899c4a98691f04fc991e"
+  },
+  {
+   "file": "03_hello_wave_motion.webp",
+   "shows": "Hello-wave loop, 15 fps, under 1.8 MB",
+   "input": "robot_armature_v20.blend (SHA-256 d02f01723636f2365ffeaa05fdcd4f731bc4effd11676f8b8186e87e43798a4a) + scripts/showcase/wave_motion.py",
+   "generator": [
+    "scripts/showcase/render_showcase.py --jobs wave",
+    "scripts/showcase/compose_showcase.py"
+   ],
+   "metric": "90 source frames, loop closes, 0 joint-limit violations",
+   "status": "PRESENT",
+   "bytes": 203346,
+   "sha256": "8f1626571b51299a338c8448c81d342f664139236ae05ebc0e17bf69fabfc5be"
+  },
+  {
+   "file": "03_hello_wave_motion.mp4",
+   "shows": "Hello-wave loop, 30 fps, 3.0 s",
+   "input": "robot_armature_v20.blend (SHA-256 d02f01723636f2365ffeaa05fdcd4f731bc4effd11676f8b8186e87e43798a4a) + scripts/showcase/wave_motion.py",
+   "generator": [
+    "scripts/showcase/render_showcase.py --jobs wave",
+    "scripts/showcase/compose_showcase.py"
+   ],
+   "metric": "H.264, under 2 MB",
+   "status": "PRESENT",
+   "bytes": 139594,
+   "sha256": "8e11ecc15930a49001bff96b767a4dbe09f89f8e6c9abf05ac79ad710c4573b3"
+  },
+  {
+   "file": "04_rig_diagram.png",
+   "shows": "Deform skeleton, hand and joint limits",
+   "input": "proof/rig_hierarchy_v20.json",
+   "generator": [
+    "scripts/showcase/rig_diagram.py"
+   ],
+   "metric": "184 bones, 30 actuated right-side joints with limits",
+   "status": "PRESENT",
+   "bytes": 234338,
+   "sha256": "97d2c940eda17d3f0a7ca54156a24afd5193ab9195c4c1ae84ced9a7efdd006c"
+  },
+  {
+   "file": "rig_hierarchy_v20.json",
+   "shows": "Bone names, parents, world positions, limits and constraints",
+   "input": "robot_armature_v20.blend (SHA-256 d02f01723636f2365ffeaa05fdcd4f731bc4effd11676f8b8186e87e43798a4a)",
+   "generator": [
+    "scripts/showcase/extract_rig_hierarchy.py"
+   ],
+   "metric": "56 DEF, 68 MECH, 60 CTRL",
+   "status": "PRESENT",
+   "bytes": 46706,
+   "sha256": "8e4ca663b94ad9be520024c74899d7a91c7e9237b38787756ae39513dd4b1df7"
+  },
+  {
+   "file": "evidence_v20/v20_check.md",
+   "shows": "v20 against v19: what changed and what must not change",
+   "input": "v19 and v20 scenes",
+   "generator": [
+    "scripts/validation/v20_check.py"
+   ],
+   "metric": "All checks PASS",
+   "status": "PRESENT",
+   "bytes": 2181,
+   "sha256": "86e0b274c04d5fa3da7520631302c141a7b79b3c1682b679a834461f2545f1ce"
+  },
+  {
+   "file": "evidence_v20/verification.md",
+   "shows": "Rig, pose, seam and mesh checks on v20",
+   "input": "v17 and v20 scenes",
+   "generator": [
+    "scripts/validation/v18_verify.py"
+   ],
+   "metric": "Zero-command deviation 0.0000 degrees on 56 bones",
+   "status": "PRESENT",
+   "bytes": 6770,
+   "sha256": "110c3038e0559119d9957233cc516b238fa7491fa25cb455c7f4631b10517550"
+  },
+  {
+   "file": "evidence_v20/viewer_test.md",
+   "shows": "GLB loaded and animated in Three.js 0.170",
+   "input": "robot_v20.glb + scripts/validation/threejs/reference_v20.json",
+   "generator": [
+    "scripts/validation/threejs/run_viewer_test.mjs"
+   ],
+   "metric": "2,296 bone comparisons, worst 1.79e-6 m (recorded 2026-11-02)",
+   "status": "PRESENT",
+   "bytes": 1618,
+   "sha256": "75ce8858553a4e0530fa1555bb8010165cfb0c2884cec15adfc9da9301852ac7"
+  },
+  {
+   "file": "evidence_v20/thumb_curl_test.log",
+   "shows": "Left and right thumb mirror through export and reimport, with a failing control",
+   "input": "v20 scene",
+   "generator": [
+    "scripts/validation/thumb_curl_run.py"
+   ],
+   "metric": "Mirror error at most 2.1e-6 m (recorded 2026-11-02)",
+   "status": "PRESENT",
+   "bytes": 1056,
+   "sha256": "b5daeb0ef784c0dadeee0360b5c8769b9716e81d2af317feb5e00d518576d1b7"
+  },
+  {
+   "file": "evidence_v20/roundtrip.log",
+   "shows": "Export to reimport, all DEF bones",
+   "input": "robot_v20.glb",
+   "generator": [
+    "scripts/validation/glb_roundtrip_check.py"
+   ],
+   "metric": "Max error 2.56e-6 m (recorded 2026-11-02)",
+   "status": "PRESENT",
+   "bytes": 9108,
+   "sha256": "ce3ec3138e9d4ec2d5e628795d6f1fcbeb56b06c6908e0234e6c6dfd02111d34"
+  }
+ ],
+ "measured": {
+  "blender": "5.2.3 LTS",
+  "device": "OPTIX: NVIDIA L4",
+  "hero_fill_height": 0.784,
+  "wave_fill_height": 0.7853,
+  "turntable_fill_height": {
+   "0": 0.7849,
+   "45": 0.7877,
+   "90": 0.788,
+   "180": 0.7852,
+   "270": 0.788,
+   "315": 0.7877
+  },
+  "wave_hand_travel_m": 0.8806,
+  "all_gates_pass": true,
+  "timing_s": {
+   "setup": 20.29,
+   "hero": 22.78,
+   "turntable": {
+    "0": 5.65,
+    "45": 5.52,
+    "90": 5.27,
+    "180": 5.52,
+    "270": 5.25,
+    "315": 5.46
+   },
+   "wave": 109.11
+  }
+ }
+}

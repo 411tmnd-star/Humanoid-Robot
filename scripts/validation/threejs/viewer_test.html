@@ -1,0 +1,98 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>robot viewer test</title>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<style>html,body{margin:0;background:#8a8580}canvas{display:block}</style></head>
+<body><script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const q = new URLSearchParams(location.search);
+const W = 640, H = 900;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8a8580);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x666666, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(2, 4, 3); scene.add(key);
+const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
+camera.position.set(0, 1.2, 9); camera.lookAt(0, 1.15, 0);      // the robot faces glTF +Z (Blender -Y), so the camera sits at +Z
+
+const gltf = await new GLTFLoader().loadAsync(q.get("glb"));
+scene.add(gltf.scene);
+gltf.scene.updateMatrixWorld(true);
+const skinned = []; gltf.scene.traverse(o => { if (o.isSkinnedMesh) skinned.push(o); });
+const clip = gltf.animations[0];
+const mixer = new THREE.AnimationMixer(gltf.scene);
+mixer.clipAction(clip).play();
+let fps = 30;
+
+const toBlender = v => [v.x, -v.z, v.y];                         // glTF (Y up) -> Blender (Z up)
+function pose(frame) {
+  mixer.setTime(frame / fps);
+  gltf.scene.updateMatrixWorld(true);
+  skinned.forEach(m => m.skeleton.update());
+}
+window.api = {
+  info() {
+    const joints = new Set(); skinned.forEach(m => m.skeleton.bones.forEach(b => joints.add(b.name)));
+    let tris = 0, verts = 0; skinned.forEach(m => { verts += m.geometry.attributes.position.count; tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3; });
+    const bad = skinned.filter(m => !m.geometry.attributes.skinIndex || !m.geometry.attributes.skinWeight).map(m => m.name);
+    let nanAttr = 0; skinned.forEach(m => { for (const a of m.geometry.attributes.position.array) if (!Number.isFinite(a)) nanAttr++; });
+    let wsum = 0, wn = 0, wbad = 0;                                // every vertex must carry a full unit of skin weight
+    skinned.forEach(m => { const w = m.geometry.attributes.skinWeight; for (let i = 0; i < w.count; i++) { const s = w.getX(i) + w.getY(i) + w.getZ(i) + w.getW(i); wn++; if (Math.abs(s - 1) > 1e-3) wbad++; } });
+    return { skinnedMeshes: skinned.length, joints: [...joints].sort(), nonDefJoints: [...joints].filter(n => !n.startsWith("DEF_")),
+             verts, tris, missingSkinAttrs: bad, nanPositions: nanAttr, weightVertsChecked: wn, weightVertsNotUnit: wbad,
+             clips: gltf.animations.length, clipName: clip.name, duration: clip.duration, tracks: clip.tracks.length,
+             trackedNodes: [...new Set(clip.tracks.map(t => t.name.split(".")[0]))].length };
+  },
+  setFps(f) { fps = f; },
+  boneErrors(ref) {
+    let worst = 0, worstWhere = "", n = 0;
+    for (const [f, row] of Object.entries(ref.bones)) {
+      pose(+f);
+      for (const [name, head] of Object.entries(row)) {
+        const o = gltf.scene.getObjectByName(name); if (!o) return { error: "missing bone " + name };
+        const p = toBlender(o.getWorldPosition(new THREE.Vector3()));
+        const e = Math.hypot(p[0] - head[0], p[1] - head[1], p[2] - head[2]); n++;
+        if (e > worst) { worst = e; worstWhere = f + ":" + name; }
+      }
+    }
+    return { worst, worstWhere, compared: n };
+  },
+  meshBoxes(ref) {
+    const out = {}; let worst = 0, where = "";
+    for (const [f, row] of Object.entries(ref.meshes)) {
+      pose(+f);
+      for (const [name, bb] of Object.entries(row)) {
+        // a multi-material mesh becomes a Group named after the glTF node, with one SkinnedMesh child per material
+        const root = gltf.scene.getObjectByName(name); const parts = [];
+        if (root) root.traverse(o => { if (o.isSkinnedMesh) parts.push(o); });
+        if (!parts.length) { out[f + ":" + name] = "missing"; continue; }
+        const b = new THREE.Box3(); parts.forEach(p => b.union(new THREE.Box3().setFromObject(p, true)));
+        const mn = toBlender(b.min), mx = toBlender(b.max);
+        const lo = [0, 1, 2].map(i => Math.min(mn[i], mx[i])), hi = [0, 1, 2].map(i => Math.max(mn[i], mx[i]));
+        const e = Math.max(...[0, 1, 2].map(i => Math.max(Math.abs(lo[i] - bb.min[i]), Math.abs(hi[i] - bb.max[i]))));
+        out[f + ":" + name] = e; if (e > worst) { worst = e; where = f + ":" + name; }
+      }
+    }
+    return { worst, where, count: Object.keys(out).length, missing: Object.entries(out).filter(([, v]) => v === "missing").map(([k]) => k) };
+  },
+  waistBand(ref) {                                   // skinned torso vertices inside the waist z band (Blender z = three y)
+    const wb = ref.waist_band; pose(0);
+    const root = gltf.scene.getObjectByName(wb.mesh); const mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9]; let n = 0; const v = new THREE.Vector3();
+    root.traverse(m => { if (!m.isSkinnedMesh) return; const c = m.geometry.attributes.position.count;
+      for (let i = 0; i < c; i++) { m.getVertexPosition(i, v); v.applyMatrix4(m.matrixWorld); const b = toBlender(v);
+        if (b[2] >= wb.z[0] && b[2] <= wb.z[1]) { n++; for (let k = 0; k < 3; k++) { mn[k] = Math.min(mn[k], b[k]); mx[k] = Math.max(mx[k], b[k]); } } } });
+    return { n, err: Math.max(...[0, 1, 2].map(k => Math.max(Math.abs(mn[k] - wb.min[k]), Math.abs(mx[k] - wb.max[k])))), min: mn, max: mx };
+  },
+  robotHeight() { pose(0); const b = new THREE.Box3().setFromObject(gltf.scene, true); return { height: b.max.y - b.min.y, min: b.min.toArray(), max: b.max.toArray() }; },
+  show(frame) { pose(frame); renderer.render(scene, camera); const c = renderer.domElement, g = document.createElement("canvas"); g.width = W; g.height = H;
+    const x = g.getContext("2d"); x.drawImage(c, 0, 0); return Array.from(x.getImageData(0, 0, W, H).data).filter((_, i) => i % 4 < 3).reduce((a, v, i) => (i % 3 === 0 ? a + (v < 0xFF ? 0 : 0) : a), 0); },
+  pixelStats(frame) { pose(frame); renderer.render(scene, camera); const g = document.createElement("canvas"); g.width = W; g.height = H; const x = g.getContext("2d");
+    x.drawImage(renderer.domElement, 0, 0); const d = x.getImageData(0, 0, W, H).data; const bg = [0x8a, 0x85, 0x80]; let fg = 0;
+    const key = frame + ""; (window.__prev = window.__prev || {})[key] = d.slice();
+    for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - bg[0]) + Math.abs(d[i + 1] - bg[1]) + Math.abs(d[i + 2] - bg[2]) > 30) fg++;
+    return { foreground: fg, total: W * H }; },
+  diff(a, b) { const A = window.__prev[a], B = window.__prev[b]; let n = 0; for (let i = 0; i < A.length; i += 4) if (Math.abs(A[i] - B[i]) + Math.abs(A[i + 1] - B[i + 1]) + Math.abs(A[i + 2] - B[i + 2]) > 30) n++; return n; },
+};
+window.__ready = true;
+</script></body></html>

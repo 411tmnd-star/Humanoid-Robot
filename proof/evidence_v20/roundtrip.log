@@ -1,0 +1,169 @@
+05:57:31 | INFO: Data are loaded, start creating Blender stuff
+05:57:31 | INFO: Blender create Mesh node Sphere.010
+05:57:32 | INFO: Blender create Mesh node Sphere.007
+05:57:32 | INFO: Blender create Mesh node 411_AnkleCuff_L
+05:57:32 | INFO: Blender create Mesh node 411_AnkleCuff_R
+05:57:32 | INFO: Blender create Mesh node Sphere.004
+05:57:32 | INFO: Blender create Mesh node Sphere.001
+05:57:32 | INFO: Blender create Mesh node Cylinder.009
+05:57:32 | INFO: Blender create Mesh node Cylinder.010
+05:57:32 | INFO: Blender create Mesh node Cylinder.018
+05:57:32 | INFO: Blender create Mesh node Cylinder.001
+05:57:32 | INFO: Blender create Mesh node Cylinder.011
+05:57:32 | INFO: Blender create Mesh node Cylinder.012
+05:57:32 | INFO: Blender create Mesh node Cylinder.002
+05:57:32 | INFO: Blender create Mesh node Cylinder.003
+05:57:32 | INFO: Blender create Mesh node Cylinder.013
+05:57:32 | INFO: Blender create Mesh node Cylinder.014
+05:57:32 | INFO: Blender create Mesh node Cylinder.004
+05:57:32 | INFO: Blender create Mesh node Cylinder.005
+05:57:32 | INFO: Blender create Mesh node Cylinder.015
+05:57:32 | INFO: Blender create Mesh node Cylinder.016
+05:57:32 | INFO: Blender create Mesh node Cylinder.006
+05:57:32 | INFO: Blender create Mesh node Cylinder.007
+05:57:32 | INFO: Blender create Mesh node Cube.003
+05:57:32 | INFO: Blender create Mesh node Cube.002
+05:57:32 | INFO: Blender create Mesh node Cone.003_exportbake
+05:57:32 | INFO: Blender create Mesh node Cone.001_exportbake
+05:57:32 | INFO: Blender create Mesh node Sphere.012_exportbake
+05:57:32 | INFO: Blender create Mesh node Sphere.019
+05:57:32 | INFO: Blender create Mesh node Sphere.020
+05:57:32 | INFO: Blender create Mesh node 411_Index_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_Index_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_Index_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_Index_Phalanx3
+05:57:32 | INFO: Blender create Mesh node 411_IndexL_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_IndexL_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_IndexL_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_IndexL_Phalanx3
+05:57:32 | INFO: Blender create Mesh node Sphere.009
+05:57:32 | INFO: Blender create Mesh node Sphere.006
+05:57:32 | INFO: Blender create Mesh node 411_Little_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_Little_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_Little_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_Little_Phalanx3
+05:57:32 | INFO: Blender create Mesh node 411_LittleL_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_LittleL_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_LittleL_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_LittleL_Phalanx3
+05:57:32 | INFO: Blender create Mesh node 411_Middle_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_Middle_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_Middle_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_Middle_Phalanx3
+05:57:32 | INFO: Blender create Mesh node 411_MiddleL_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_MiddleL_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_MiddleL_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_MiddleL_Phalanx3
+05:57:32 | INFO: Blender create Mesh node Cube.015
+05:57:32 | INFO: Blender create Mesh node Torus.004
+05:57:32 | INFO: Blender create Mesh node Cylinder.031
+05:57:32 | INFO: Blender create Mesh node Cylinder.030
+05:57:32 | INFO: Blender create Mesh node Cylinder.032
+05:57:32 | INFO: Blender create Mesh node Cube.016
+05:57:32 | INFO: Blender create Mesh node 411_Neck
+05:57:32 | INFO: Blender create Mesh node Cube.001
+05:57:32 | INFO: Blender create Mesh node Cube
+05:57:32 | INFO: Blender create Mesh node 411_PelvicShell
+05:57:32 | INFO: Blender create Mesh node Cube.017
+05:57:32 | INFO: Blender create Mesh node 411_Ring_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_Ring_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_Ring_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_Ring_Phalanx3
+05:57:32 | INFO: Blender create Mesh node 411_RingL_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_RingL_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_RingL_Knuckle3
+05:57:32 | INFO: Blender create Mesh node 411_RingL_Phalanx3
+05:57:32 | INFO: Blender create Mesh node Cylinder.019
+05:57:32 | INFO: Blender create Mesh node Cube.012
+05:57:32 | INFO: Blender create Mesh node Cube.013
+05:57:32 | INFO: Blender create Mesh node Cube.014
+05:57:32 | INFO: Blender create Mesh node Cylinder.025
+05:57:32 | INFO: Blender create Mesh node Cylinder.026
+05:57:32 | INFO: Blender create Mesh node Cylinder.027
+05:57:32 | INFO: Blender create Mesh node Cylinder.028
+05:57:32 | INFO: Blender create Mesh node Cylinder
+05:57:32 | INFO: Blender create Mesh node Cube.004
+05:57:32 | INFO: Blender create Mesh node Cylinder.029
+05:57:32 | INFO: Blender create Mesh node Cube.011
+05:57:32 | INFO: Blender create Mesh node Cylinder.020
+05:57:32 | INFO: Blender create Mesh node Cylinder.021
+05:57:32 | INFO: Blender create Mesh node Cube.005
+05:57:32 | INFO: Blender create Mesh node Cube.006
+05:57:32 | INFO: Blender create Mesh node Cube.007
+05:57:32 | INFO: Blender create Mesh node Cube.008
+05:57:32 | INFO: Blender create Mesh node Cube.009
+05:57:32 | INFO: Blender create Mesh node Cube.010
+05:57:32 | INFO: Blender create Mesh node Cone.007_exportbake
+05:57:32 | INFO: Blender create Mesh node Cone.005_exportbake
+05:57:32 | INFO: Blender create Mesh node Sphere.003
+05:57:32 | INFO: Blender create Mesh node Sphere
+05:57:32 | INFO: Blender create Mesh node 411_Sole_L
+05:57:32 | INFO: Blender create Mesh node 411_Sole_R
+05:57:32 | INFO: Blender create Mesh node Cone.006
+05:57:32 | INFO: Blender create Mesh node Cone.004
+05:57:32 | INFO: Blender create Mesh node 411_Thumb_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_Thumb_Knuckle2
+05:57:32 | INFO: Blender create Mesh node Cylinder.008_L
+05:57:32 | INFO: Blender create Mesh node 411_Thumb_Phalanx2
+05:57:32 | INFO: Blender create Mesh node Cylinder.008
+05:57:32 | INFO: Blender create Mesh node Sphere.002_L
+05:57:32 | INFO: Blender create Mesh node Sphere.002
+05:57:32 | INFO: Blender create Mesh node 411_ThumbL_Knuckle1
+05:57:32 | INFO: Blender create Mesh node 411_ThumbL_Knuckle2
+05:57:32 | INFO: Blender create Mesh node 411_ThumbL_Phalanx2
+05:57:32 | INFO: Blender create Mesh node Torso_Mesh_exportbake
+05:57:32 | INFO: Blender create Mesh node Cone.002
+05:57:32 | INFO: Blender create Mesh node Cone
+05:57:32 | INFO: Blender create Mesh node 411_Visor_Glass
+05:57:32 | INFO: Blender create Mesh node 411_Visor_Strip
+05:57:32 | INFO: Blender create Mesh node 411_WaistRing_Backing
+05:57:32 | INFO: Blender create Mesh node 411_WaistRing_New
+05:57:32 | INFO: Blender create Mesh node 411_Wrist_L
+05:57:32 | INFO: Blender create Mesh node 411_Wrist_R
+05:57:33 | INFO: Blender create Mesh node 411_Yoke
+05:57:33 | INFO: glTF import finished in 1.07s
+IMPORT: 56 bones, missing DEF bones [], non-DEF bones [] | action hello_sequence
+source frame | import frame | max head/tail error over all DEF bones
+           0 |         0.00 | 1.602e-06 m
+           2 |         1.60 | 1.664e-06 m
+           4 |         3.20 | 2.020e-06 m
+           6 |         4.80 | 2.083e-06 m
+           8 |         6.40 | 2.052e-06 m
+          10 |         8.00 | 2.560e-06 m
+          12 |         9.60 | 1.972e-06 m
+          14 |        11.20 | 1.711e-06 m
+          16 |        12.80 | 1.595e-06 m
+          18 |        14.40 | 1.602e-06 m
+          20 |        16.00 | 1.584e-06 m
+          22 |        17.60 | 1.705e-06 m
+          24 |        19.20 | 1.707e-06 m
+          26 |        20.80 | 1.787e-06 m
+          28 |        22.40 | 1.655e-06 m
+          30 |        24.00 | 1.602e-06 m
+          32 |        25.60 | 1.602e-06 m
+          34 |        27.20 | 1.602e-06 m
+          36 |        28.80 | 1.646e-06 m
+          38 |        30.40 | 1.921e-06 m
+          40 |        32.00 | 1.637e-06 m
+          42 |        33.60 | 1.602e-06 m
+          44 |        35.20 | 1.602e-06 m
+          46 |        36.80 | 1.602e-06 m
+          48 |        38.40 | 1.602e-06 m
+          50 |        40.00 | 1.602e-06 m
+          52 |        41.60 | 1.602e-06 m
+          54 |        43.20 | 1.602e-06 m
+          56 |        44.80 | 1.602e-06 m
+          58 |        46.40 | 1.602e-06 m
+          60 |        48.00 | 1.602e-06 m
+          62 |        49.60 | 1.602e-06 m
+          64 |        51.20 | 1.602e-06 m
+          66 |        52.80 | 1.602e-06 m
+          68 |        54.40 | 1.602e-06 m
+          70 |        56.00 | 1.602e-06 m
+          72 |        57.60 | 1.602e-06 m
+          74 |        59.20 | 1.602e-06 m
+          76 |        60.80 | 1.602e-06 m
+          78 |        62.40 | 1.602e-06 m
+          80 |        64.00 | 1.602e-06 m
+bones that move in the source action: 22 ['DEF_Elbow', 'DEF_Forearm_Twist', 'DEF_Index_MCP', 'DEF_Index_PIP', 'DEF_Index_Tip', 'DEF_Little_MCP']
+RESULT: PASS (tolerance 0.0001 m, at least 3 moving bones, max error 2.560e-06 m)

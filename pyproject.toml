@@ -1,0 +1,16 @@
+[project]
+name = "humanoid-robot"
+version = "2.0.0"
+description = "Blender Python rig builder, read-only QA framework and render pipeline for a 184-bone humanoid robot."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Source-available, see LICENSE"}
+dependencies = []
+
+[project.optional-dependencies]
+proof = ["pillow", "matplotlib"]
+
+[tool.pytest.ini_options]
+testpaths = ["scripts/humanoid_qa/tests", "scripts/showcase/tests"]
+pythonpath = ["scripts", "scripts/showcase"]
+python_files = ["test_*.py"]

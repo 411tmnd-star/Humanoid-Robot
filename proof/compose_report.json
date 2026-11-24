@@ -1,0 +1,46 @@
+{
+ "files": {
+  "01_hero_scene.png": {
+   "bytes": 1860830,
+   "sha256": "7bd50adbaef64b5e71a91e9d7a5a97cd2494725d53591115173fc365b99c41fa",
+   "pixels": [
+    1472,
+    1840
+   ]
+  },
+  "02_turntable_sheet.png": {
+   "bytes": 1780913,
+   "sha256": "c55c89dd53df3affba037203e75bf8090e617b74adf7899c4a98691f04fc991e",
+   "pixels": [
+    1659,
+    1471
+   ]
+  },
+  "03_hello_wave_motion.webp": {
+   "bytes": 203346,
+   "sha256": "8f1626571b51299a338c8448c81d342f664139236ae05ebc0e17bf69fabfc5be",
+   "pixels": [
+    600,
+    750
+   ]
+  },
+  "03_hello_wave_motion.mp4": {
+   "bytes": 139594,
+   "sha256": "8e11ecc15930a49001bff96b767a4dbe09f89f8e6c9abf05ac79ad710c4573b3",
+   "pixels": null
+  }
+ },
+ "gates": {
+  "01_hero_scene.png_under_2000000_bytes": true,
+  "02_turntable_sheet.png_under_2000000_bytes": true,
+  "03_hello_wave_motion.webp_under_1800000_bytes": true,
+  "03_hello_wave_motion.mp4_under_2000000_bytes": true
+ },
+ "webp": {
+  "width": 600,
+  "quality": 82,
+  "frames": 45
+ },
+ "wave_source_frames": 90,
+ "pass": true
+}
